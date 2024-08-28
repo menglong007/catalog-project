@@ -1,0 +1,195 @@
+<div class="h-screen overflow-y-hidden bg-gray-100">
+  <div class="flex w-full p-4 bg-neutral-100 justify-center shadow-sm">
+    <div class="w-[80%]">
+      <span class="text-2xl text-gray-500 font-bold italic font-mono">Counties of the World</span>
+    </div>
+  </div>
+
+  <div class="w-full flex justify-center pt-3">
+    <div class="w-[80%]">
+      <div class="flex justify-center mb-4">
+        <div class="relative shadow-lg rounded-2xl">
+          <input
+            (keyup)="applyFilter()"
+            [formControl]="search"
+            type="text"
+            class="w-96 rounded-lg border border-gray-200 p-4 pr-12 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="Search..."
+          />
+          <span class="absolute inset-y-0 end-0 grid place-content-center px-4">
+         <svg
+           class="w-4 h-4 text-gray-500 dark:text-gray-400"
+           aria-hidden="true"
+           xmlns="http://www.w3.org/2000/svg"
+           fill="none"
+           viewBox="0 0 20 20"
+         >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z"
+              />
+            </svg>
+        </span>
+        </div>
+
+      </div>
+
+      <div class="bg-white rounded-2xl border ">
+        <div style="height: calc(100vh - 204px); overflow: auto" class="relative  rounded-2xl -z-0">
+          <table  mat-table [dataSource]="dataSource" class="absolute separate" matSort>
+            <ng-container matColumnDef="no">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="text-gray-500 text-xs">No.</div>
+              </th>
+              <td mat-cell *matCellDef="let i = index">
+                {{ getDisplayedIndex(i) }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header="name.official" >
+                <div class="text-gray-500 text-xs">Name</div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="h-16 flex items-center">
+                  {{ element.name.official }}
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="flag">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="text-gray-500 text-xs">Flag</div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <img [src]="element.flags.png" class="w-16 m-1" alt="logo"/>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="cc2">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="w-24 text-center text-gray-500 text-xs">
+                  Country Code <br/>
+                  (Alpha 2)
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="text-center ">{{ element.cca2 }}</div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="cc3">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="w-24 text-center text-gray-500 text-xs">
+                  Country Code <br/>
+                  (Alpha 3)
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="text-center">{{ element.cca3 }}</div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="nativeName">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="text-center text-gray-500 text-xs">Native Name</div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <ng-container *ngIf="element.name.nativeName | keyvalue as nativeNames">
+                  <div *ngIf="nativeNames.length > 0">
+                    <div
+                      *ngIf="checkObject(nativeNames[0].value) as checkedValues"
+                    >
+                      <ng-container *ngIf="checkedValues.length > 0">
+                        <div class="flex flex-col">
+                          <ng-container
+                            *ngFor="let subItem of checkedValues.slice(0, 1)"
+                          >
+                            <div class="flex gap-2 text-md">
+                              <strong class="uppercase "
+                              >{{ subItem.key }}:
+                              </strong>
+                              {{ subItem.value }}
+                            </div>
+                          </ng-container>
+                          <ng-container
+                            *ngFor="let subItem of checkedValues.slice(1, 2)"
+                          >
+                            <div class="flex gap-2 uppercase text-md">
+                              <strong>{{ subItem.key }}: </strong>
+                              {{ subItem.value }}
+                            </div>
+                          </ng-container>
+                        </div>
+                      </ng-container>
+                    </div>
+                  </div>
+                </ng-container>
+                <ng-container *ngIf="!element.name.nativeName">
+                  <ng-container *ngFor="let item of element.name | keyvalue; let i = index">
+                    <div class="flex gap-2 text-md" *ngIf="i === 0">
+                      <strong class="uppercase">
+                        {{ item.key }}:
+                      </strong>
+                      {{ item.value }}
+                    </div>
+                    <div class="flex gap-2 text-md" *ngIf="i === 1">
+                      <strong class="uppercase">
+                        {{ item.key }}:
+                      </strong>
+                      {{ item.value }}
+                    </div>
+                  </ng-container>
+
+                </ng-container>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="altSpellings">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="text-center text-gray-500 text-xs">AltSpellings</div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <ng-container
+                  *ngFor="let item of element.altSpellings; let i = index"
+                >
+                <span
+                >{{
+                    item
+                  }}<span *ngIf="i < element.altSpellings.length - 1"
+                  >,
+                  </span></span
+                >
+                </ng-container>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="idd">
+              <th mat-header-cell *matHeaderCellDef>
+                <div class="text-center text-gray-500 text-xs">IDD</div>
+              </th>
+              <td mat-cell *matCellDef="let element">
+                <div class="flex justify-center">
+                  <p>{{ element.idd.root }}</p>
+                  <p *ngIf="element.idd.suffixes">
+                    {{ element.idd.suffixes[0] }}
+                  </p>
+                </div>
+              </td>
+            </ng-container>
+            <tr
+              mat-header-row
+              *matHeaderRowDef="displayedColumns; sticky: true"
+            ></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns" (click)="onDialog(row)" class="cursor-pointer"></tr>
+          </table>
+        </div>
+        <mat-paginator [pageIndex]="0" [pageSizeOptions]="[25, 50, 100]"></mat-paginator>
+      </div>
+    </div>
+  </div>
+</div>
+
